@@ -1,0 +1,22 @@
+{
+  "name": "linebox-2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prod":"webpack --config ./webpack/webpack.prod.js",
+    "build":"webpack --config ./webpack/webpack.build.js",
+    "dev":"webpack --config ./webpack/webpack.dev.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JianShangQuan/LineBox.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JianShangQuan/LineBox/issues"
+  },
+  "homepage": "https://github.com/JianShangQuan/LineBox#readme"
+}
