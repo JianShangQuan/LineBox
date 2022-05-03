@@ -11,7 +11,17 @@ const BoardController = new Board({
     row: 10, 
     col: 10,
     ctx: ctx,
-    canvas: board
+    canvas: board,
+    players: [
+        {
+            name: '简尚全',
+            color: 'red'
+        },
+        {
+            name: '简尚威',
+            color: 'green'
+        }
+    ]
 });
 
 
@@ -20,6 +30,9 @@ board.addEventListener('mousemove', e => {
     BoardController.mousemove(e);
 });
 
+board.addEventListener('click', e => {
+    BoardController.click(e);
+});
 
 
 
