@@ -2,28 +2,47 @@ const Board = require('./board');
 
 
 
+const currentPlayerView = document.querySelector('.current-player span');
+
 
 const board = document.getElementById('board');
 const ctx = board.getContext('2d');
+const players = [
+    {
+        name: '简尚全',
+        color: 'red'
+    },
+    {
+        name: '简尚威',
+        color: 'green'
+    }
+];
 const BoardController = new Board({
     width: 400,
     height: 400,
-    row: 10, 
-    col: 10,
+    row: 6, 
+    col: 6,
     ctx: ctx,
     canvas: board,
-    players: [
-        {
-            name: '简尚全',
-            color: 'red'
+    players: players,
+    events: {
+        init: function(){
+            currentPlayerView.textContent = players[0].name;
         },
-        {
-            name: '简尚威',
-            color: 'green'
+        onClick: function(line){
+            console.log('on clicked');
+        },
+        onPlayerChanged: function (previousPlayerInfo, currentPlayerInfo){
+            document.querySelector(`.player-info .player[data-player-id="${previousPlayerInfo.id}"] .player-score`).textContent = previousPlayerInfo.score;
+            currentPlayerView.textContent = currentPlayerInfo.name;
         }
-    ]
+    }
 });
 
+
+
+
+window.BoardController = BoardController;
 
 
 board.addEventListener('mousemove', e => {

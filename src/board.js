@@ -26,12 +26,9 @@ module.exports = class Board{
         this.#xGap = this.width / this.row;
         this.#yGap = this.height / this.col;
 
-        this.#init();        
-    }
+        this.events = options.events;
 
-    #init(){
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
+        this.#init();        
     }
 
     draw(event = null){
@@ -41,6 +38,12 @@ module.exports = class Board{
         this.#drawClickline();
         this.#drawCompleteSquareDots();
         this.#drawDots();
+    }
+
+    #init(){
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        this.events.init();
     }
 
     #drawDots(){
@@ -60,7 +63,6 @@ module.exports = class Board{
         let yGap = this.#yGap;
 
         if(event){
-            // console.log(event.clientX, event.clientY);
             let react = this.canvas.getBoundingClientRect();            
             let hoverX = (event.clientX - react.left + xGap / 2) / xGap;
             let hoverY = (event.clientY - react.top + yGap / 2) / yGap;
@@ -86,24 +88,24 @@ module.exports = class Board{
                 //   (x2, y2)
                 // 
 
-                let x = Math.floor(hoverX) * xGap + (xGap / 2);
+                let x = Math.floor(hoverX) + 0.5;
 
-                let y1 = Math.floor(hoverY) * yGap + (yGap / 2);
-                let y2 = (Math.floor(hoverY) - 1) * yGap + (yGap / 2);
+                let y1 = (Math.floor(hoverY) - 1) + 0.5;
+                let y2 = Math.floor(hoverY) + 0.5;
 
                 if(hoverX - Math.floor(hoverX) < this.threshold) x = x - xGap;
 
                 this.ctx.beginPath();
-                this.ctx.moveTo(x, y1); 
-                this.ctx.lineTo(x, y2);
+                this.ctx.moveTo(x * xGap, y1 * yGap); 
+                this.ctx.lineTo(x * xGap, y2 * yGap);
                 this.ctx.stroke();
                 this.ctx.closePath();
 
                 return {
-                    x1: x / xGap, 
-                    y1: y1 / yGap,
-                    x2: x / xGap, 
-                    y2: y2 / yGap 
+                    x1: x, 
+                    y1: y1,
+                    x2: x, 
+                    y2: y2 
                 }
             }else if(hoverX > 1 && 
                 (hoverY - Math.floor(hoverY) > (1 - this.threshold) || hoverY - Math.floor(hoverY) < this.threshold) && hoverX < this.row){
@@ -116,24 +118,24 @@ module.exports = class Board{
                 //      o=======================o
                 //
 
-                let x1 = Math.floor(hoverX) * xGap + (xGap / 2);
-                let x2 = (Math.floor(hoverX) - 1) * xGap + (xGap / 2);
+                let x1 = (Math.floor(hoverX) - 1) + 0.5;
+                let x2 = Math.floor(hoverX) + 0.5;
                 
-                let y = Math.floor(hoverY) * yGap + (yGap / 2);
+                let y = Math.floor(hoverY) + 0.5;
 
                 if(hoverY - Math.floor(hoverY) < this.threshold) y = y - yGap;
 
                 this.ctx.beginPath();
-                this.ctx.moveTo(x1, y); 
-                this.ctx.lineTo(x2, y);
+                this.ctx.moveTo(x1 * xGap, y * yGap); 
+                this.ctx.lineTo(x2 * xGap, y * yGap);
                 this.ctx.stroke();
                 this.ctx.closePath();
 
                 return {
-                    x1: x1 / xGap, 
-                    y1: y / yGap,  
-                    x2: x2 / xGap, 
-                    y2: y / yGap 
+                    x1: x1, 
+                    y1: y,  
+                    x2: x2, 
+                    y2: y 
                 }
             }
 
@@ -184,14 +186,14 @@ module.exports = class Board{
             let squareLines = {
                 down: {
                     line1: line,
-                    line2: {x1: line.x1 - 1, y1: line.y1 + 1, x2: line.x2, y2: line.y2},
-                    line3: {x1: line.x1, y1: line.y1 + 1, x2: line.x2 + 1, y2: line.y2},
-                    line4: {x1: line.x1, y1: line.y1 + 1, x2: line.x2, y2: line.y2 + 1}
+                    line2: {x1: line.x1, y1: line.y1, x2: line.x1, y2: line.y1 + 1},
+                    line3: {x1: line.x1, y1: line.y1 + 1, x2: line.x2, y2: line.y2 + 1},
+                    line4: {x1: line.x2, y1: line.y2, x2: line.x2, y2: line.y2 + 1}
                 },
                 up: {
                     line1: line,
-                    line2: {x1: line.x1 - 1, y1: line.y1, x2: line.x2, y2: line.y2 - 1},
-                    line3: {x1: line.x1, y1: line.y1, x2: line.x2 + 1, y2: line.y2 - 1},
+                    line2: {x1: line.x1, y1: line.y1 - 1, x2: line.x1, y2: line.y1},
+                    line3: {x1: line.x2, y1: line.y2 - 1, x2: line.x2, y2: line.y2},
                     line4: {x1: line.x1, y1: line.y1 - 1, x2: line.x2, y2: line.y2 - 1}
                 }
             }
@@ -226,22 +228,20 @@ module.exports = class Board{
                 side: upValid, 
                 type: 'up',
                 needSide: Object.values(squareLines.up).filter((l, index) => {
-                    for(let i = 0; i < upValid.length; i++){
-                        return self.#isEqualLine(l, upValid[i].line);
-                    }
+                    for(let i = 0; i < upValid.length; i++)
+                        if(self.#isEqualLine(l, upValid[i].line)) return false;
+                    return true;
                 })
             });
             if(downValid.length == 3) goingToBeSquare.push({
                 side: downValid, 
                 type: 'down',
                 needSide: Object.values(squareLines.down).filter((l, index) => {
-                    for(let i = 0; i < downValid.length; i++){
-                        return self.#isEqualLine(l, downValid[i].line);
-                    }
+                    for(let i = 0; i < downValid.length; i++)
+                        if(self.#isEqualLine(l, downValid[i].line)) return false;
+                    return true;
                 })
             });
-
-            console.log('square line', squareLines);
 
             return {
                 isValidSquare: isValidSquare,
@@ -254,14 +254,14 @@ module.exports = class Board{
             let squareLines = {
                 left: {
                     line1: line,
-                    line2: {x1: line.x1, y1: line.y1 - 1, x2: line.x2 - 1, y2: line.y2},
-                    line3: {x1: line.x1, y1: line.y1, x2: line.x2 - 1, y2: line.y2 + 1},
+                    line2: {x1: line.x1 - 1, y1: line.y1, x2: line.x1, y2: line.y1},
+                    line3: {x1: line.x2 - 1, y1: line.y2, x2: line.x2, y2: line.y2},
                     line4: {x1: line.x1 - 1, y1: line.y1, x2: line.x2 - 1, y2: line.y2},
                 },
                 right: {
                     line1: line,
-                    line2: {x1: line.x1 + 1, y1: line.y1 - 1, x2: line.x2, y2: line.y2},
-                    line3: {x1: line.x1 + 1, y1: line.y1, x2: line.x2, y2: line.y2 + 1},
+                    line2: {x1: line.x1, y1: line.y1, x2: line.x2 + 1, y2: line.y1},
+                    line3: {x1: line.x2, y1: line.y2, x2: line.x2 + 1, y2: line.y2},
                     line4: {x1: line.x1 + 1, y1: line.y1, x2: line.x2 + 1, y2: line.y2},
                 }
             }
@@ -296,166 +296,30 @@ module.exports = class Board{
                 side: leftValid, 
                 type: 'left',
                 needSide: Object.values(squareLines.left).filter((l, index) => {
-                    for(let i = 0; i < leftValid.length; i++){
-                        return self.#isEqualLine(l, leftValid[i].line);
-                    }
+                    for(let i = 0; i < leftValid.length; i++)
+                        if(self.#isEqualLine(l, leftValid[i].line)) return false;
+                    return true;
                 })
             });
             if(rightValid.length == 3) goingToBeSquare.push({
                 side: rightValid, 
                 type: 'right',
                 needSide: Object.values(squareLines.right).filter((l, index) => {
-                    for(let i = 0; i < rightValid.length; i++){
-                        return self.#isEqualLine(l, rightValid[i].line);
-                    }
+                    for(let i = 0; i < rightValid.length; i++)
+                        if(self.#isEqualLine(l, rightValid[i].line)) return false;
+                    return true;
                 })
             });
-
-            console.log('square line', squareLines);
 
             return {
                 isValidSquare: isValidSquare,
                 validSquare: validSquare,
-                isGoingToBeSquare: goingToBeSquare.length > 0,
+                isGoingToValidSquare: goingToBeSquare.length > 0,
                 goingToBeSquare: goingToBeSquare
             }
         }
     }
 
-    #checkIsGoingToBecomeValidBox(line){
-        const leftValid = [],
-              rightValid = [],
-              upValid = [],
-              downValid = [];
-
-        if(this.#lineType(line) == Board.LineType.horizontal){ // horizontal
-            let goingToBeSquareLines = {
-                left: { // square "]" shape
-                    line1: line,
-                    line2: {x1: line.x1, y1: line.y1, x2: line.x2, y2: line.y2},
-                    line3: {x1: line.x1, y1: line.y1, x2: line.x2, y2: line.y2},
-                },
-                right: { // square "[" shpae
-                    line1: line,
-                    line2: {x1: line.x1 - 1, y1: line.y1, x2: line.x2, y2: line.y2 - 1},
-                    line3: {x1: line.x1, y1: line.y1 - 1, x2: line.x2, y2: line.y2 - 1}
-                },
-                down: { // square "n" shape
-                    line1: line,
-                    line2: {x1: line.x1 - 1, y1: line.y1 + 1, x2: line.x2, y2: line.y2},
-                    line3: {x1: line.x1, y1: line.y1 + 1, x2: line.x2 + 1, y2: line.y2},
-                },
-                up: { // square "u" shape
-                    line1: line,
-                    line2: {x1: line.x1 - 1, y1: line.y1, x2: line.x2, y2: line.y2 - 1},
-                    line3: {x1: line.x1, y1: line.y1, x2: line.x2 + 1, y2: line.y2 - 1},
-                }
-            }
-
-
-            this.#clickedLines.forEach(l => {
-                if(
-                    this.#isEqualLine(l.line, goingToBeSquareLines.left.line1) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.left.line2) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.left.line3)
-                ){
-                    leftValid.push(l);
-                }
-
-                if(
-                    this.#isEqualLine(l.line, goingToBeSquareLines.right.line1) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.right.line2) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.right.line3)
-                ){
-                    rightValid.push(l);
-                }
-
-                if(
-                    this.#isEqualLine(l.line, goingToBeSquareLines.up.line1) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.up.line2) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.up.line3)
-                ){
-                    upValid.push(l);
-                }
-
-                if(
-                    this.#isEqualLine(l.line, goingToBeSquareLines.down.line1) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.down.line2) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.down.line3)
-                ){
-                    downValid.push(l);
-                }
-            });
-
-
-            console.log(goingToBeSquareLines);
-        }else{ // is vertical
-            let goingToBeSquareLines = {
-                left: { // square "]" shape
-                    line1: line,
-                    line2: {x1: line.x1, y1: line.y1 - 1, x2: line.x2 - 1, y2: line.y2},
-                    line3: {x1: line.x1, y1: line.y1, x2: line.x2 - 1, y2: line.y2 + 1}
-                },
-                right: { // square "[" shpae
-                    line1: line,
-                    line2: {x1: line.x1 + 1, y1: line.y1 - 1, x2: line.x2, y2: line.y2},
-                    line3: {x1: line.x1 + 1, y1: line.y1, x2: line.x2, y2: line.y2 + 1}
-                },
-                down: { // square "n" shape
-                    line1: line,
-                    line2: {x1: line.x1, y1: line.y1 - 1, x2: line.x2 - 1, y2: line.y2},
-                    line3: {x1: line.x1 - 1, y1: line.y1, x2: line.x2 - 1, y2: line.y2},
-                },
-                up: { // square "u" shape
-                    line1: line,
-                    line2: {x1: line.x1, y1: line.y1, x2: line.x2 - 1, y2: line.y2 + 1},
-                    line3: {x1: line.x1 - 1, y1: line.y1, x2: line.x2 - 1, y2: line.y2},
-                }
-            }
-
-
-            this.#clickedLines.forEach(l => {
-                if(
-                    this.#isEqualLine(l.line, goingToBeSquareLines.left.line1) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.left.line2) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.left.line3)
-                ){
-                    leftValid.push(l);
-                }
-
-                if(
-                    this.#isEqualLine(l.line, goingToBeSquareLines.right.line1) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.right.line2) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.right.line3)
-                ){
-                    rightValid.push(l);
-                }
-
-                if(
-                    this.#isEqualLine(l.line, goingToBeSquareLines.up.line1) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.up.line2) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.up.line3)
-                ){
-                    upValid.push(l);
-                }
-
-                if(
-                    this.#isEqualLine(l.line, goingToBeSquareLines.down.line1) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.down.line2) ||
-                    this.#isEqualLine(l.line, goingToBeSquareLines.down.line3)
-                ){
-                    downValid.push(l);
-                }
-            });
-
-            console.log(goingToBeSquareLines);
-        }
-
-        console.log('upValid', upValid);
-        console.log('downValid', downValid);
-        console.log('rightValid', rightValid);
-        console.log('leftValid', leftValid);
-    }
 
     #lineType(line){
         if(line.x1 == line.x2) return Board.LineType.vertical;
@@ -514,24 +378,38 @@ module.exports = class Board{
 
     #hasLine(line){
         for(let i = 0; i < this.#clickedLines.length; i++ ){
-            if(this.#isEqualLine(this.#clickedLines[0].line, line))
+            if(this.#isEqualLine(this.#clickedLines[i].line, line))
                 return true;
         }
         return false;
     }
 
     nextTurn(){
+        const previousPlayer = this.#turns;
+        const self = this;
         if(this.players == this.#turns){
             this.#turns = 1;
         }else{
             this.#turns++;
         }
+        this.events?.onPlayerChanged && this.events?.onPlayerChanged(
+            {
+                ...this.playerConfig[previousPlayer - 1],
+                score: self.getPlayerScores(previousPlayer),
+                id: previousPlayer
+            },
+            {
+                ...this.playerConfig[this.#turns - 1], 
+                score: self.getPlayerScores(this.#turns),
+                id: this.#turns
+            } 
+        );
     }
 
     click(event){
         const self = this;
+        console.log('click called');
         const line = this.#findJointPointsFromPexelPosition(event);
-        console.log('click called', line);
         if(line){
             if(this.#hasLine(line)) return;
             this.#clickedLines.push({
@@ -551,17 +429,17 @@ module.exports = class Board{
                 });
 
                 if(validLine.isGoingToValidSquare){
+                    const react = self.canvas.getBoundingClientRect();
                     validLine.goingToBeSquare.forEach(square => {
-                        console.log((square.needSide[0].x1), (square.needSide[0].y1),
-                        (square.needSide[0].x1) * self.#xGap, (square.needSide[0].y1) * self.#yGap, self.#xGap, self.#yGap);
                         self.click({
                             ...event,
-                            clientX: (square.needSide[0].x1) * self.#xGap, // 236
-                            clientY: (square.needSide[0].y1) * self.#yGap // 331
+                            clientX: (((square.needSide[0].x1 + square.needSide[0].x2) / 2) * self.#xGap) + react.left, // 236
+                            clientY: (((square.needSide[0].y1 + square.needSide[0].y2) / 2) * self.#yGap) + react.top // 331
                         });
                     });
                 }
             }
+            this.events?.onClick && this?.events?.onClick(line);
             this.nextTurn();
             this.draw();
         }
@@ -589,5 +467,20 @@ module.exports = class Board{
         this.#yGap = this.height / this.col;
 
         this.draw();
+    }
+
+    getPlayerScores(playerId){
+        return this.#completedSquarePoints.filter(completed => {
+            return completed.player == playerId;
+        }).length;
+    }
+
+    getCurrentPlayer(){
+        return this.playerConfig[this.#turns - 1];
+    }
+
+
+    getClickLines(){
+        return this.#clickedLines;
     }
 }
