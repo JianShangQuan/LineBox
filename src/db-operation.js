@@ -1,5 +1,5 @@
 const { onValue, get } = require('firebase/database');
-const {set, ref, db, off} = require('./firebase');
+const {set, ref, db, remove} = require('./firebase');
 const idGenerator = require('./id-generator');
 
 
@@ -50,8 +50,9 @@ module.exports = {
             data && callback(data);
         });
     },
-    clean: function(){
+    dispose: function(){
         onChangedListener(); // detatch change
         onChangedListener = null;
+        remove(ref(db, `/game-data/${gameId}`))
     }
 };

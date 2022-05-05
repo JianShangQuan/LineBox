@@ -52,6 +52,11 @@ const boardConfig = {
             console.log('player changed');
             document.querySelector(`.player-info .player[data-player-id="${previousPlayerInfo.id}"] .player-score`).textContent = previousPlayerInfo.score;
             currentPlayerView.textContent = currentPlayerInfo.name;
+        },
+        onDispose: function(){
+            board.removeEventListener('mousemove', BoardController.mousemove);
+            board.removeEventListener('click', BoardController.click);
+            window.removeEventListener('resize', onResize, true);
         }
     }
 }
@@ -88,13 +93,9 @@ function init(){
         });
 
 
-        board.addEventListener('mousemove', e => {
-            BoardController.mousemove(e);
-        });
-        
-        board.addEventListener('click', e => {
-            BoardController.click(e);
-        });
+        board.addEventListener('mousemove', BoardController.mousemove);
+        board.addEventListener('click', BoardController.click);
+        window.addEventListener('resize', onResize, true);
         
 
         window.BoardController = BoardController;
@@ -107,14 +108,10 @@ function init(){
 
         window.BoardController = BoardController;
 
-        window.addEventListener('resize', function(event) {
-            const minSize = Math.min(window.innerWidth, window.innerHeight);
-            BoardController.setDimension(minSize * 0.75, minSize * 0.75);
-        }, true);
     });
 
     joinGameBtn.addEventListener('click', async e => {
-        console.log('game joined');
+        console.log('joining game');
         gameid = joinGameIdInput.value;
         gameidView.textContent = 'Game id : ' +  gameid;
 
@@ -130,15 +127,9 @@ function init(){
         });
 
 
-        board.addEventListener('mousemove', e => {
-            BoardController.mousemove(e);
-        });
-        
-        board.addEventListener('click', e => {
-            BoardController.click(e);
-        });
-
-        window.BoardController = BoardController;
+        board.addEventListener('mousemove', BoardController.mousemove);
+        board.addEventListener('click', BoardController.click);
+        window.addEventListener('resize', onResize, true);
 
 
         db.onStateChanged(joinGameIdInput.value, (data) => {
@@ -147,6 +138,7 @@ function init(){
         });
 
         window.BoardController = BoardController;
+        console.log('game joined');
     });
 
 };
@@ -154,8 +146,18 @@ function init(){
 init();
 
 
+
+
+
+function onResize(){
+    const minSize = Math.min(window.innerWidth, window.innerHeight);
+    BoardController.setDimension(minSize * 0.75, minSize * 0.75);
+}
+
+
 window.onbeforeunload = async function(e){
-    db.clean();
+    db.dispose();
+    BoardController.dispose();
 }
 
 

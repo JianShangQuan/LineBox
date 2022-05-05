@@ -550,4 +550,14 @@ module.exports = class Board{
         }
     }
 
+
+    dispose(){
+        this.events.dispose();
+        this.#clickedLines = [];
+        this.#completedSquarePoints = [];
+        this.#gameStarted = false;
+        this.#waitingOpponent = false;
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        this.players = [];
+    }
 }
