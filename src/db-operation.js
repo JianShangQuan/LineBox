@@ -29,7 +29,7 @@ module.exports = {
     },
     saveState: function (gameid = gameId, data){
         if(!(gameid && data)) return;
-        set(ref(db, `/game-data/${gameid}/data`), data);
+        set(ref(db, `/game-data/${gameid}/data`), data).then(res => console.log(res)).catch(err => console.log(err));
     },
     getGameInfo: function(gameid = gameId){
         return get(ref(db, `/game-data/${gameid}/info`))

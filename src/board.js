@@ -161,6 +161,8 @@ module.exports = class Board{
 
         const line = this.#findJointPointsFromPexelPosition(event);
         if(line){
+            console.log(event.clientX, event.clientY);
+
             this.canvas.style.cursor = 'pointer';
             this.ctx.lineWidth = 1;
             this.ctx.beginPath();
@@ -452,7 +454,6 @@ module.exports = class Board{
 
         if(line){
             if(this.#hasLine(line)) return;
-            this.#waitingOpponent = true;
             this.#clickedLines.push({
                 line: line,
                 player: this.#turns
@@ -461,7 +462,7 @@ module.exports = class Board{
             const validLine = this.#checkValidBox(line);
             if(validLine.isValidSquare){
                 validLine.validSquare.forEach(square => {
-                    const centerPoint = this.#findCenterPointOfSquareLines(square.side.map(s => s.line));
+                    const centerPoint = self.#findCenterPointOfSquareLines(square.side.map(s => s.line));
                     self.#completedSquarePoints.push({
                         point: centerPoint,
                         player: this.#turns
@@ -470,12 +471,16 @@ module.exports = class Board{
 
                 if(validLine.isGoingToValidSquare){
                     const react = self.canvas.getBoundingClientRect();
-                    validLine.goingToBeSquare.forEach(square => {
-                        self.click({
+                    console.log('validation', validLine);
+                    validLine.goingToBeSquare.forEach((square, index) => {
+                        const ob = {
                             ...event,
-                            clientX: (((square.needSide[0].x1 + square.needSide[0].x2) / 2) * self.#xGap) + react.left, // 236
-                            clientY: (((square.needSide[0].y1 + square.needSide[0].y2) / 2) * self.#yGap) + react.top // 331
-                        });
+                            clientX: (((square.needSide[index].x1 + square.needSide[index].x2) / 2) * self.#xGap) + react.left, // 236
+                            clientY: (((square.needSide[index].y1 + square.needSide[index].y2) / 2) * self.#yGap) + react.top // 331
+                        };
+                        console.log('square', ob.clientX, ob.clientY);
+                        self.click(ob);
+                        return;
                     });
                     return;
                 }
@@ -484,6 +489,7 @@ module.exports = class Board{
             this.nextTurn();
             this.draw();
             this.canvas.style.cursor = 'default';
+            this.#waitingOpponent = true;
         }
     }
 
