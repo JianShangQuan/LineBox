@@ -480,7 +480,6 @@ module.exports = class Board{
                         };
                         console.log('square', ob.clientX, ob.clientY);
                         self.click(ob);
-                        return;
                     });
                     return;
                 }
