@@ -18,10 +18,10 @@ const players = [
     }
 ];
 const BoardController = new Board({
-    width: 400,
-    height: 400,
-    row: 6, 
-    col: 6,
+    width: Math.min(window.innerWidth,window.innerHeight) * 0.75,
+    height: Math.min(window.innerWidth,window.innerHeight) * 0.75,
+    row: 10, 
+    col: 10,
     ctx: ctx,
     canvas: board,
     players: players,
@@ -30,7 +30,7 @@ const BoardController = new Board({
             currentPlayerView.textContent = players[0].name;
         },
         onClick: function(line){
-            console.log('on clicked');
+            // console.log('on clicked', line);
         },
         onPlayerChanged: function (previousPlayerInfo, currentPlayerInfo){
             document.querySelector(`.player-info .player[data-player-id="${previousPlayerInfo.id}"] .player-score`).textContent = previousPlayerInfo.score;
@@ -82,6 +82,6 @@ board.addEventListener('click', e => {
 
 
 window.addEventListener('resize', function(event) {
-    console.log('resize');
-    BoardController.setDimension(window.innerWidth / 2, window.innerHeight / 2);
+    const minSize = Math.min(window.innerWidth, window.innerHeight);
+    BoardController.setDimension(minSize * 0.75, minSize * 0.75);
 }, true);

@@ -19,8 +19,24 @@
                 <span class="player-score">0</span>
             </div>
         </div>
-        <div class="current-player">Current player: <span>简尚全</span></div>
-        <canvas id="board"></canvas>
+        <div style="display: flex;">
+            <div class="canvas-container">
+                <canvas id="board"></canvas>
+            </div>
+            <div class="game-info">
+                <label for="">
+                    Player 1: 
+                    <input type="text">
+                </label>
+                <label for="">
+                    Player 2:
+                    <input type="text">
+                </label>
+                <button>Start game</button><span class="status"></span>
+                <div class="current-player">Current player: <span>简尚全</span></div>
+                <div></div>
+            </div>
+        </div>
     </main>
 
     <script src="./bundle.js"></script>

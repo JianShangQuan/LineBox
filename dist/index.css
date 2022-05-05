@@ -11,10 +11,17 @@ html, body, main{
 }
 
 
+
+.canvas-container{
+    flex: 4;
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
 #board{
     position: relative;
     background-color: rgb(204, 204, 204);
-    left: 100px;
 }
 
 
@@ -53,3 +60,18 @@ html, body, main{
     font-weight: bold;
     display: block;
 }
+
+
+
+
+
+.game-info{
+    display: block;
+    flex: 2;
+    padding: 1rem;
+}
+
+.game-info label{
+    display: block;
+}
+

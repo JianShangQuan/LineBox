@@ -44,13 +44,15 @@ module.exports = class Board{
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         this.events.init();
+
+        if(this.row < 2 || this.col < 2) throw new Error('A board must have at least 2x2');
     }
 
     #drawDots(){
         for(let i = 0; i < this.row; i ++){
             for(let j = 0; j < this.col; j++){
                 this.ctx.beginPath();
-                this.ctx.arc((i * this.#xGap) + (this.#xGap / 2), (j * this.#yGap) + (this.#yGap / 2), (this.width / 95) , 0, 2 * Math.PI);
+                this.ctx.arc((i * this.#xGap) + (this.#xGap / 2), (j * this.#yGap) + (this.#yGap / 2), (Math.min(this.width, this.height) / 95) , 0, 2 * Math.PI);
                 this.ctx.fillStyle = '#000000';
                 this.ctx.fill();
                 this.ctx.closePath();
@@ -62,16 +64,20 @@ module.exports = class Board{
         let xGap = this.#xGap;
         let yGap = this.#yGap;
 
+
         if(event){
             let react = this.canvas.getBoundingClientRect();            
             let hoverX = (event.clientX - react.left + xGap / 2) / xGap;
             let hoverY = (event.clientY - react.top + yGap / 2) / yGap;
 
-            // console.log("x", hoverX, 'y', hoverY, event.type);
+            const floorX = Math.floor(hoverX);
+            const floorY = Math.floor(hoverY);
+
+            // console.log("x", hoverX, 'y', hoverY, event.type, "x floor", floorX, "y floor", floorY);
 
 
             if(hoverY > 1 && 
-                (hoverX - Math.floor(hoverX) > (1 - this.threshold) || hoverX - Math.floor(hoverX) < this.threshold) && hoverY < this.col){
+                (hoverX - floorX > (1 - this.threshold) || hoverX - floorX < this.threshold) && hoverY < this.col){
 
                 // for vertical line "|"
                 // in vertical "X" position are same
@@ -88,18 +94,12 @@ module.exports = class Board{
                 //   (x2, y2)
                 // 
 
-                let x = Math.floor(hoverX) + 0.5;
+                let x = floorX + 0.5;
 
-                let y1 = (Math.floor(hoverY) - 1) + 0.5;
-                let y2 = Math.floor(hoverY) + 0.5;
+                let y1 = (floorY - 1) + 0.5;
+                let y2 = floorY + 0.5;
 
-                if(hoverX - Math.floor(hoverX) < this.threshold) x = x - xGap;
-
-                this.ctx.beginPath();
-                this.ctx.moveTo(x * xGap, y1 * yGap); 
-                this.ctx.lineTo(x * xGap, y2 * yGap);
-                this.ctx.stroke();
-                this.ctx.closePath();
+                if(hoverX - floorX < this.threshold) x = x - 1;
 
                 return {
                     x1: x, 
@@ -108,7 +108,7 @@ module.exports = class Board{
                     y2: y2 
                 }
             }else if(hoverX > 1 && 
-                (hoverY - Math.floor(hoverY) > (1 - this.threshold) || hoverY - Math.floor(hoverY) < this.threshold) && hoverX < this.row){
+                (hoverY - floorY > (1 - this.threshold) || hoverY - floorY < this.threshold) && hoverX < this.row){
 
 
                 // for horizontal line "--"
@@ -118,18 +118,12 @@ module.exports = class Board{
                 //      o=======================o
                 //
 
-                let x1 = (Math.floor(hoverX) - 1) + 0.5;
-                let x2 = Math.floor(hoverX) + 0.5;
+                let x1 = (floorX - 1) + 0.5;
+                let x2 = floorX + 0.5;
                 
-                let y = Math.floor(hoverY) + 0.5;
+                let y = floorY + 0.5;
 
-                if(hoverY - Math.floor(hoverY) < this.threshold) y = y - yGap;
-
-                this.ctx.beginPath();
-                this.ctx.moveTo(x1 * xGap, y * yGap); 
-                this.ctx.lineTo(x2 * xGap, y * yGap);
-                this.ctx.stroke();
-                this.ctx.closePath();
+                if(hoverY - floorY < this.threshold) y = y - 1;
 
                 return {
                     x1: x1, 
@@ -146,16 +140,21 @@ module.exports = class Board{
     #drawHover(event){
         const line = this.#findJointPointsFromPexelPosition(event);
         if(line){
+            this.canvas.style.cursor = 'pointer';
+            this.ctx.lineWidth = 1;
             this.ctx.beginPath();
             this.ctx.moveTo(line.x1 * this.#xGap, line.y1 * this.#yGap); 
             this.ctx.lineTo(line.x2 * this.#xGap, line.y2 * this.#yGap);
             this.ctx.stroke();
             this.ctx.closePath();
+        }else{
+            this.canvas.style.cursor = 'default';
         }
     }
 
     #drawClickline(){
         // console.log(this.#clickedLines);
+        this.ctx.lineWidth = Math.min(this.width, this.height) * 0.008;
         for(let i = 0; i < this.#clickedLines.length; i++){
             this.ctx.beginPath();
             this.ctx.moveTo(this.#clickedLines[i].line.x1 * this.#xGap, this.#clickedLines[i].line.y1 * this.#yGap); 
@@ -168,7 +167,7 @@ module.exports = class Board{
     #drawCompleteSquareDots(){
         this.#completedSquarePoints.forEach(p => {
             this.ctx.beginPath();
-            this.ctx.arc(p.point.x * this.#xGap, p.point.y * this.#yGap, this.#xGap * 0.3 , 0, 2 * Math.PI);
+            this.ctx.arc(p.point.x * this.#xGap, p.point.y * this.#yGap, Math.min(this.#xGap, this.#yGap) * 0.3 , 0, 2 * Math.PI);
             this.ctx.fillStyle = this.playerConfig[p.player - 1].color;
             this.ctx.fill();
             this.ctx.closePath();
@@ -408,17 +407,15 @@ module.exports = class Board{
 
     click(event){
         const self = this;
-        console.log('click called');
         const line = this.#findJointPointsFromPexelPosition(event);
         if(line){
             if(this.#hasLine(line)) return;
             this.#clickedLines.push({
                 line: line,
-                player: this.players
+                player: this.#turns
             });
 
             const validLine = this.#checkValidBox(line);
-            console.log(validLine);
             if(validLine.isValidSquare){
                 validLine.validSquare.forEach(square => {
                     const centerPoint = this.#findCenterPointOfSquareLines(square.side.map(s => s.line));
@@ -442,6 +439,7 @@ module.exports = class Board{
             this.events?.onClick && this?.events?.onClick(line);
             this.nextTurn();
             this.draw();
+            this.canvas.style.cursor = 'default';
         }
     }
 
@@ -475,12 +473,24 @@ module.exports = class Board{
         }).length;
     }
 
-    getCurrentPlayer(){
+    get currentPlayer(){
         return this.playerConfig[this.#turns - 1];
     }
 
 
-    getClickLines(){
+    get clickLines(){
         return this.#clickedLines;
     }
+
+    get completeSquarePoints(){
+        return this.#completedSquarePoints;
+    }
+
+    
+    updateData(clickLines, completedDots){
+        this.#clickedLines = clickLines;
+        this.#completedSquarePoints = completedDots;
+        this.draw();
+    }
+
 }
