@@ -161,7 +161,6 @@ module.exports = class Board{
 
         const line = this.#findJointPointsFromPexelPosition(event);
         if(line){
-            console.log(event.clientX, event.clientY);
 
             this.canvas.style.cursor = 'pointer';
             this.ctx.lineWidth = 1;
@@ -471,14 +470,12 @@ module.exports = class Board{
 
                 if(validLine.isGoingToValidSquare){
                     const react = self.canvas.getBoundingClientRect();
-                    console.log('validation', validLine);
                     validLine.goingToBeSquare.forEach((square, index) => {
                         const ob = {
                             ...event,
                             clientX: (((square.needSide[index].x1 + square.needSide[index].x2) / 2) * self.#xGap) + react.left, // 236
                             clientY: (((square.needSide[index].y1 + square.needSide[index].y2) / 2) * self.#yGap) + react.top // 331
                         };
-                        console.log('square', ob.clientX, ob.clientY);
                         self.click(ob);
                     });
                     return;
