@@ -4,6 +4,9 @@ module.exports = {
   entry: './src/index.js',
   mode: 'development',
   watch: true,
+  optimization: {
+    minimize: false
+  },
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, '../', 'dist'),

@@ -5,13 +5,22 @@ module.exports = class Board{
     #clickedLines = [];
     #completedSquarePoints = [];
     #turns = 1;
+    #playMode = null;
+    #gameStarted = false;
 
     static LineType = Object.freeze({
         horizontal: 'horizontal',
         vertical: 'vertical'
     });
 
+    static PlayMode = Object.freeze({
+        online: 'online', 
+        local: 'local'
+    })
+
     constructor(options){
+        this.gameId = options.gameId;
+
         this.width = options.width;
         this.height = options.height;
         this.row = options.row;
@@ -22,6 +31,8 @@ module.exports = class Board{
 
         this.players = options.players.length;
         this.playerConfig = options.players;
+        this.#playMode = options.playMode;
+        this.#fixedPlayer = options.fixedPlayer;
 
         this.#xGap = this.width / this.row;
         this.#yGap = this.height / this.col;
@@ -383,9 +394,19 @@ module.exports = class Board{
         return false;
     }
 
-    nextTurn(){
-        const previousPlayer = this.#turns;
+    startGame(){
+        this.#gameStarted = true;
+    }
+
+    pauseGame(){
+        this.#gameStarted = false;
+    }
+
+    nextTurn(id){
         const self = this;
+        id && (this.#turns = id);
+        const previousPlayer = this.#turns;
+
         if(this.players == this.#turns){
             this.#turns = 1;
         }else{
@@ -406,6 +427,7 @@ module.exports = class Board{
     }
 
     click(event){
+
         const self = this;
         const line = this.#findJointPointsFromPexelPosition(event);
         if(line){
@@ -484,6 +506,10 @@ module.exports = class Board{
 
     get completeSquarePoints(){
         return this.#completedSquarePoints;
+    }
+
+    get playMode(){
+        return this.#playMode;
     }
 
     

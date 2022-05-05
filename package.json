@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prod":"webpack --config ./webpack/webpack.prod.js",
-    "build":"webpack --config ./webpack/webpack.build.js",
-    "dev":"webpack --config ./webpack/webpack.dev.js"
+    "prod": "webpack --config ./webpack/webpack.prod.js",
+    "build": "webpack --config ./webpack/webpack.build.js",
+    "dev": "webpack --config ./webpack/webpack.dev.js"
   },
   "repository": {
     "type": "git",
@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/JianShangQuan/LineBox/issues"
   },
-  "homepage": "https://github.com/JianShangQuan/LineBox#readme"
+  "homepage": "https://github.com/JianShangQuan/LineBox#readme",
+  "dependencies": {
+    "firebase": "^9.7.0",
+    "nanoid": "^3.3.4"
+  }
 }
