@@ -1,5 +1,5 @@
-const { onValue } = require('firebase/database');
-const {set, ref, db} = require('./firebase');
+const { onValue, get } = require('firebase/database');
+const {set, ref, db, off} = require('./firebase');
 const idGenerator = require('./id-generator');
 
 
@@ -7,6 +7,9 @@ const idGenerator = require('./id-generator');
 
 console.log(db);
 
+
+let onChangedListener = null;
+let gameId = null
 
 
 module.exports = {
@@ -24,24 +27,31 @@ module.exports = {
                     player2: players[1]
                 }
             }
-        })
+        }).then((res) => gameId = gameid);
         return {
             gameid,
             onStateChanged: self.onStateChanged
         };
     },
-    deleteGame: function(gameId){
+    deleteGame: function(gameId = gameId){
 
     },
-    saveState: function (gameid, data){
+    saveState: function (gameid = gameId, data){
         if(!(gameid && data)) return;
         set(ref(db, `/game-data/${gameid}/data`), data);
-        console.log('save state', data);
     },
-    onStateChanged: function (gameid, callback){
-        onValue(ref(db, `/game-data/${gameid}/data`), (snapshot) => {
+    getGameInfo: function(gameid = gameId){
+        return get(ref(db, `/game-data/${gameid}/info`))
+                .then((snapshot) => snapshot?.val());
+    },
+    onStateChanged: function (gameid = gameId, callback){
+        onChangedListener = onValue(ref(db, `/game-data/${gameid}/data`), (snapshot) => {
             const data = snapshot.val();
             data && callback(data);
         });
+    },
+    clean: function(){
+        onChangedListener(); // detatch change
+        onChangedListener = null;
     }
 };

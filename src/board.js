@@ -7,6 +7,7 @@ module.exports = class Board{
     #turns = 1;
     #playMode = null;
     #gameStarted = false;
+    #waitingOpponent = false;
 
     static LineType = Object.freeze({
         horizontal: 'horizontal',
@@ -32,7 +33,6 @@ module.exports = class Board{
         this.players = options.players.length;
         this.playerConfig = options.players;
         this.#playMode = options.playMode;
-        this.#fixedPlayer = options.fixedPlayer;
 
         this.#xGap = this.width / this.row;
         this.#yGap = this.height / this.col;
@@ -55,6 +55,8 @@ module.exports = class Board{
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         this.events.init();
+
+        this.draw();
 
         if(this.row < 2 || this.col < 2) throw new Error('A board must have at least 2x2');
     }
@@ -149,6 +151,11 @@ module.exports = class Board{
     }
 
     #drawHover(event){
+
+        if(this.#playMode == Board.PlayMode.online){
+            if(this.#waitingOpponent) return;
+        }
+
         const line = this.#findJointPointsFromPexelPosition(event);
         if(line){
             this.canvas.style.cursor = 'pointer';
@@ -407,7 +414,7 @@ module.exports = class Board{
         id && (this.#turns = id);
         const previousPlayer = this.#turns;
 
-        if(this.players == this.#turns){
+        if(this.players == this.#turns || !this.#turns){
             this.#turns = 1;
         }else{
             this.#turns++;
@@ -424,14 +431,25 @@ module.exports = class Board{
                 id: this.#turns
             } 
         );
+        return {
+            ...this.playerConfig[this.#turns - 1], 
+            score: self.getPlayerScores(this.#turns),
+            id: this.#turns
+        }
     }
 
     click(event){
 
+        if(this.#playMode == Board.PlayMode.online){
+            if(this.#waitingOpponent) return;
+        }
+
         const self = this;
         const line = this.#findJointPointsFromPexelPosition(event);
+
         if(line){
             if(this.#hasLine(line)) return;
+            this.#waitingOpponent = true;
             this.#clickedLines.push({
                 line: line,
                 player: this.#turns
@@ -456,6 +474,7 @@ module.exports = class Board{
                             clientY: (((square.needSide[0].y1 + square.needSide[0].y2) / 2) * self.#yGap) + react.top // 331
                         });
                     });
+                    return;
                 }
             }
             this.events?.onClick && this?.events?.onClick(line);
@@ -496,7 +515,10 @@ module.exports = class Board{
     }
 
     get currentPlayer(){
-        return this.playerConfig[this.#turns - 1];
+        return {
+            id: this.#turns,
+            player: this.playerConfig[this.#turns - 1]
+        };
     }
 
 
@@ -512,11 +534,20 @@ module.exports = class Board{
         return this.#playMode;
     }
 
+    get isWaitingOpponent(){
+        return this.#waitingOpponent;
+    }
+
     
-    updateData(clickLines, completedDots){
-        this.#clickedLines = clickLines;
-        this.#completedSquarePoints = completedDots;
-        this.draw();
+    updateDataFromOpponent(clickLines, completedDots){
+        if(this.#clickedLines.length == 0 || this.clickLines.length != clickLines.length){
+            this.#clickedLines = clickLines;
+            this.#completedSquarePoints = completedDots;
+            console.log('clickLines', clickLines);
+            this.draw();
+            this.nextTurn(clickLines[clickLines.length - 1].player);
+            this.#waitingOpponent = false;
+        }
     }
 
 }

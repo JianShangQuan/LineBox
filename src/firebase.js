@@ -1,5 +1,5 @@
 const { initializeApp } = require('firebase/app');
-const { getDatabase, ref, set, get, remove, onValue } = require('firebase/database');
+const { getDatabase, ref, set, get, remove, onValue, off} = require('firebase/database');
 
 // console.log(firebase);
 
@@ -17,5 +17,6 @@ const app = initializeApp(config);
 module.exports = {
     db: getDatabase(app),
     app, ref, set, get, remove,
+    off,
     onValue
 };
