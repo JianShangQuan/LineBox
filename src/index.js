@@ -6,8 +6,8 @@ window.db = db;
 let gameid = null;
 
 
-const player1Input = document.querySelector('body');
-const player2Input = document.querySelector('body');
+const player1Input = document.querySelector('.player-1-input');
+const player2Input = document.querySelector('.player-2-input');
 const joinGameIdInput = document.querySelector('#join-game-id-input');
 
 const currentPlayerView = document.querySelector('.current-player span');
@@ -19,26 +19,18 @@ const joinGameBtn = document.querySelector('#join-game-btn');
 let BoardController = null;
 const board = document.getElementById('board');
 const ctx = board.getContext('2d');
-const players = [
-    {
-        name: '简尚全',
-        color: 'red'
-    },
-    {
-        name: '简尚威',
-        color: 'green'
-    }
-]
 const boardConfig = {
     width: Math.min(window.innerWidth,window.innerHeight) * 0.75,
     height: Math.min(window.innerWidth,window.innerHeight) * 0.75,
     ctx: ctx,
     canvas: board,
-    players: players,
     playMode: Board.PlayMode.online,
     events: {
-        init: function(){
-            currentPlayerView.textContent = players[0].name;
+        init: function(obj){
+            currentPlayerView.textContent = obj.players[0].name;
+            obj.players.forEach(player => {
+                document.querySelector(`.player[data-player-id="${player.id}"] .player-name`).textContent = player.name;
+            });
         },
         onClick: function(line){
             console.log('on clicked', line);
@@ -46,7 +38,7 @@ const boardConfig = {
                 currentTurn: BoardController.currentPlayer.id,
                 clickedLines: BoardController.clickLines,
                 completeSquarePoints: BoardController.completeSquarePoints
-            })
+            });
         },
         onPlayerChanged: function (previousPlayerInfo, currentPlayerInfo){
             console.log('player changed');
@@ -72,14 +64,26 @@ const boardConfig = {
 
 
 
+
+
 function init(){
     // BoardController.draw();
 
     startGameBtn.addEventListener('click', async e => {
         const boardSize = {
-            row: 10,
-            col: 10
+            row: parseInt(document.querySelector('.board-size input[data-board-size-x="x"]').value),
+            col: parseInt(document.querySelector('.board-size input[data-board-size-y="y"]').value)
         };
+        const players = [
+            {
+                name: player1Input.value.trim(),
+                color: 'red'
+            },
+            {
+                name: player2Input.value.trim(),
+                color: 'black'
+            }
+        ];
         const gameCreatedObject = await db.createNewGame(players, { size: boardSize });
         gameid = gameCreatedObject.gameid;
         gameidView.textContent = 'Game id : ' +  gameid;
@@ -90,11 +94,12 @@ function init(){
             gameid: gameid,
             row: boardSize.row,
             col: boardSize.col,
+            players: players
         });
 
 
-        board.addEventListener('mousemove', BoardController.mousemove);
-        board.addEventListener('click', BoardController.click);
+        board.addEventListener('mousemove', BoardController.mousemove.bind(BoardController));
+        board.addEventListener('click', BoardController.click.bind(BoardController));
         window.addEventListener('resize', onResize, true);
         
 
@@ -103,11 +108,12 @@ function init(){
 
         gameCreatedObject.onStateChanged(gameid, (data) => {
             BoardController.updateDataFromOpponent(data.clickedLines, data.completeSquarePoints ?? []);
-            // BoardController.nextTurn(data.currentTurn);
         })
 
         window.BoardController = BoardController;
 
+        document.querySelector('.join-game').classList.add('hide');
+        document.querySelector('.start-game').classList.add('hide');
     });
 
     joinGameBtn.addEventListener('click', async e => {
@@ -124,27 +130,31 @@ function init(){
             gameid: gameid,
             row: gameInfo.game.size.row,
             col: gameInfo.game.size.col,
+            players: gameInfo.players
         });
 
 
-        board.addEventListener('mousemove', BoardController.mousemove);
-        board.addEventListener('click', BoardController.click);
+        board.addEventListener('mousemove', BoardController.mousemove.bind(BoardController));
+        board.addEventListener('click', BoardController.click.bind(BoardController));
         window.addEventListener('resize', onResize, true);
 
 
         db.onStateChanged(joinGameIdInput.value, (data) => {
             BoardController.updateDataFromOpponent(data.clickedLines ?? [], data.completeSquarePoints ?? []);
-            // BoardController.nextTurn(data.currentTurn);
         });
+
+        BoardController.joinOpponent();
 
         window.BoardController = BoardController;
         console.log('game joined');
+
+        document.querySelector('.start-game').classList.add('hide');
+        document.querySelector('.join-game').classList.add('hide');
     });
 
 };
 
 init();
-
 
 
 

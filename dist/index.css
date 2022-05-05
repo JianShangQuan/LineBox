@@ -21,8 +21,20 @@ html, body, main{
 
 #board{
     position: relative;
+    border-radius: 20px;
     background-color: rgb(204, 204, 204);
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    -ms-border-radius: 20px;
+    -o-border-radius: 20px;
 }
+
+
+
+.board-size input{
+    width: 5rem;
+}
+
 
 
 
@@ -75,3 +87,9 @@ html, body, main{
     display: block;
 }
 
+
+
+
+.hide{
+    display: none !important;
+}

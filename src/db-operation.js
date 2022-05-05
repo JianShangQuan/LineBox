@@ -2,12 +2,6 @@ const { onValue, get } = require('firebase/database');
 const {set, ref, db, remove} = require('./firebase');
 const idGenerator = require('./id-generator');
 
-
-
-
-console.log(db);
-
-
 let onChangedListener = null;
 let gameId = null
 
@@ -22,10 +16,7 @@ module.exports = {
                 game: {
                     size: gameConfig.size
                 },
-                players: {
-                    player1: players[0],
-                    player2: players[1]
-                }
+                players: players
             }
         }).then((res) => gameId = gameid);
         return {

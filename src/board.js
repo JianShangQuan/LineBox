@@ -52,9 +52,12 @@ module.exports = class Board{
     }
 
     #init(){
+        const self = this;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        this.events.init();
+        this.events.init({
+            players: self.playerConfig.map((player, index) => { return {...player, id: index + 1}})
+        });
 
         this.draw();
 
@@ -536,6 +539,12 @@ module.exports = class Board{
 
     get isWaitingOpponent(){
         return this.#waitingOpponent;
+    }
+
+
+    joinOpponent(){
+        this.#waitingOpponent = true;
+        return this;
     }
 
     

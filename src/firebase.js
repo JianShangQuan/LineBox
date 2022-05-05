@@ -13,6 +13,8 @@ const config = {
 
 const app = initializeApp(config);
 
+console.log('DB initialized');
+
 
 module.exports = {
     db: getDatabase(app),
