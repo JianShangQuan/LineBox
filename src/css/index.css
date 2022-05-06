@@ -31,6 +31,12 @@ html, body, main{
 
 
 
+.github-source-code{
+    padding: 2rem 0rem;
+}
+
+
+
 .board-size input{
     width: 5rem;
 }

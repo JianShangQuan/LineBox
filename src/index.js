@@ -1,3 +1,6 @@
+
+import './load-assets';
+
 const Board = require('./board');
 const db = require('./db-operation');
 
